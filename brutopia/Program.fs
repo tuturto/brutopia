@@ -9,15 +9,21 @@ type Season =
 type Model = {
     year : int;
     season : Season;
+    population : uint64;
     running : Boolean;
 }
 
+let newPopulation model =
+    (uint64((float)model.population * 1.004))
+
 let processSpringSeason model =
-    {model with season = Season.Autumn }
+    {model with season = Season.Autumn 
+                population = (newPopulation model) }
 
 let processAutumnSeason model =
     { model with year = model.year + 1
-                 season = Season.Spring }
+                 season = Season.Spring
+                 population = (newPopulation model) }
 
 let advanceSeason model =
     match model.season with
@@ -34,6 +40,7 @@ let seasonText season =
 let outputStatus model =
     printfn "Status for the year: %d" model.year
     printfn "Current season: %s" (seasonText model.season)
+    printfn "Population: %d" model.population
     model
 
 let rec mainLoop model =
@@ -45,6 +52,7 @@ let rec mainLoop model =
 let main argv = 
     let model = { year = 1;
                   season = Season.Spring;
+                  population = (uint64)2503042;
                   running = true }
     mainLoop model    
     0 // return an integer exit code
