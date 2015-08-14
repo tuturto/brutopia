@@ -1,0 +1,7 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/brutopia/obj/Debug
+/brutopia/bin/Debug
+/.vs/brutopia/v14/.suo
