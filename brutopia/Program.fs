@@ -8,6 +8,10 @@ type Harvest =
     | None
     | Some of int
 
+type Advice =
+    | NoAdvice
+    | SomeAdvice of String
+
 type Model = {
     season : Season;
     population : int;
@@ -21,7 +25,7 @@ let foodRequired model =
     model.population * 2
 
 let newPopulation model =
-    let r = System.Random()
+    let r = Random()
     let rate = match (model.food, foodRequired model) with
                | (available, required) when available * 2 > required -> (float32)(r.Next(1, 6))
                | (available, required) when available > required -> (float32)(r.Next(1, 4))
@@ -52,6 +56,7 @@ let advanceSeason model =
                  harvest = harvest }
 
 let outputStatus model =
+    printfn ""
     printfn "%s" <| match model.season with
                         | Autumn (year) -> sprintf "Autumn of year %d" year
                         | Spring (year) -> sprintf "Spring of year %d" year
@@ -62,8 +67,28 @@ let outputStatus model =
                                    | Some (amount) -> sprintf "%d" amount
     model
 
+let giveAdvice model =
+    let r = Random()    
+    let adviceList = [
+        (if model.food < foodRequired model then SomeAdvice "We don't have enough food, maybe more fields is needed?" else NoAdvice);
+        (if model.population < model.fields then SomeAdvice "We have more fields than farmers, so some of the fields aren't producing anything." else NoAdvice);
+        (match model.harvest with
+             | None -> NoAdvice
+             | Some (amount) -> if amount < 2 * (foodRequired model) then SomeAdvice "Our fields don't produce enough harvest to feed everyone in the long run." else NoAdvice)
+    ]
+    let allAdvice = adviceList |> List.filter (fun x -> match x with
+                                                       | NoAdvice -> false
+                                                       | _ -> true) 
+    if allAdvice.Length > 0 then
+        let advice = (allAdvice |> List.item (r.Next allAdvice.Length))
+        printfn ""
+        printfn "Advice: %s" <| match advice with
+                                    | NoAdvice -> ""
+                                    | (SomeAdvice text) -> text
+    model
+
 let rec mainLoop model =
-    let newModel = advanceSeason model |> outputStatus
+    let newModel = advanceSeason model |> outputStatus |> giveAdvice
     Console.ReadKey() |> ignore
     mainLoop newModel
 
