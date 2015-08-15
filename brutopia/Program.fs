@@ -1,13 +1,10 @@
 ﻿open System
 
-exception UnknownSeason of Enum
-
 type Season =
-    | Spring = 0
-    | Autumn = 1
+    | Spring of int
+    | Autumn of int
 
 type Model = {
-    year : int;
     season : Season;
     population : int64;
     food : int64;
@@ -28,35 +25,22 @@ let newPopulation model =
                | (available, required) when required / 2L > available -> -(float32)(r.Next(10, 20))
                | _ -> -(float32)(r.Next(5, 10))
     model.population + (int64)((float32)model.population * (rate / 1000.0f))
-    
-let processSpringSeason model =
-    {model with season = Season.Autumn 
-                population = (newPopulation model)
-                food = max (model.food - foodRequired model) 0L}
-
-let processAutumnSeason model =
-    { model with year = model.year + 1
-                 season = Season.Spring
-                 population = (newPopulation model) 
-                 food = max (model.food - foodRequired model) 0L }
 
 let advanceSeason model =
     match model.season with
-        | Season.Autumn -> processAutumnSeason model
-        | Season.Spring -> processSpringSeason model
-        | _ -> raise (UnknownSeason model.season)
-
-let seasonText season =
-    match season with
-        | Season.Autumn -> "Autumn"
-        | Season.Spring -> "Spring"
-        | _ -> raise (UnknownSeason season)
+        | Spring (year) -> { model with season = Autumn year
+                                        population = (newPopulation model)
+                                        food = max (model.food - foodRequired model) 0L }
+        | Autumn (year) -> { model with season = Spring <| year + 1
+                                        population = (newPopulation model)
+                                        food = max (model.food - foodRequired model) 0L }
 
 let outputStatus model =
-    printfn "Status for the year: %d" model.year
-    printfn "Current season: %s" (seasonText model.season)
+    printfn "%s" <| match model.season with
+                        | Autumn (year) -> sprintf "Autumn of year %d" year
+                        | Spring (year) -> sprintf "Spring of year %d" year
     printfn "Population: %d" model.population
-    printfn "Food: %d" model.food
+    printfn "Food: %d / %d" model.food <| foodRequired model
     model
 
 let rec mainLoop model =
@@ -66,8 +50,7 @@ let rec mainLoop model =
 
 [<EntryPoint>]
 let main argv = 
-    let model = { year = 1;
-                  season = Season.Spring;
+    let model = { season = Spring 1;
                   population = 500000L;
                   food = 10000000L;
                   running = true }
