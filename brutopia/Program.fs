@@ -19,8 +19,14 @@ let foodRequired model =
 
 let newPopulation model =
     let r = System.Random()
-    let rate = if model.food >= (foodRequired model) then (float32)(r.Next(1, 5))
-               else -(float32)(r.Next(1, 5))
+    let rate = match (model.food, foodRequired model) with
+               | (available, required) when available * 2L > required -> (float32)(r.Next(1, 6))
+               | (available, required) when available > required -> (float32)(r.Next(1, 4))
+               | (0L, _) -> -(float32)(r.Next(500, 900))
+               | (available, required) when required / 4L > available -> -(float32)(r.Next(20, 60))
+               | (available, required) when required / 3L > available -> -(float32)(r.Next(10, 40))
+               | (available, required) when required / 2L > available -> -(float32)(r.Next(10, 20))
+               | _ -> -(float32)(r.Next(5, 10))
     model.population + (int64)((float32)model.population * (rate / 1000.0f))
     
 let processSpringSeason model =
