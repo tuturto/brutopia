@@ -10,21 +10,29 @@ type Model = {
     year : int;
     season : Season;
     population : int64;
+    food : int64;
     running : Boolean;
 }
 
+let foodRequired model =
+    model.population * 2L
+
 let newPopulation model =
     let r = System.Random()
-    model.population + (int64)((float32)model.population * ((float32)(r.Next(1, 5)) / 1000.0f))
-
+    let rate = if model.food >= (foodRequired model) then (float32)(r.Next(1, 5))
+               else -(float32)(r.Next(1, 5))
+    model.population + (int64)((float32)model.population * (rate / 1000.0f))
+    
 let processSpringSeason model =
     {model with season = Season.Autumn 
-                population = (newPopulation model) }
+                population = (newPopulation model)
+                food = max (model.food - foodRequired model) 0L}
 
 let processAutumnSeason model =
     { model with year = model.year + 1
                  season = Season.Spring
-                 population = (newPopulation model) }
+                 population = (newPopulation model) 
+                 food = max (model.food - foodRequired model) 0L }
 
 let advanceSeason model =
     match model.season with
@@ -42,6 +50,7 @@ let outputStatus model =
     printfn "Status for the year: %d" model.year
     printfn "Current season: %s" (seasonText model.season)
     printfn "Population: %d" model.population
+    printfn "Food: %d" model.food
     model
 
 let rec mainLoop model =
@@ -53,7 +62,8 @@ let rec mainLoop model =
 let main argv = 
     let model = { year = 1;
                   season = Season.Spring;
-                  population = (int64)500000;
+                  population = 500000L;
+                  food = 10000000L;
                   running = true }
     mainLoop model    
     0 // return an integer exit code
