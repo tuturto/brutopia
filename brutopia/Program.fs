@@ -30,10 +30,10 @@ let newPopulation model =
                | (available, required) when required / 3 > available -> -(float32)(r.Next(10, 40))
                | (available, required) when required / 2 > available -> -(float32)(r.Next(10, 20))
                | _ -> -(float32)(r.Next(5, 10))
-    model.population + (int)((float32)model.population * (rate / 1000.0f))
+    model.population + (int)((float32)model.population * (rate / 1000.0f)) + r.Next(1, 10)
 
 let harvestedAmount model =
-    model.fields * 40
+    40 * min model.fields model.population 
 
 let advanceSeason model =
     let harvest = match model.season with
