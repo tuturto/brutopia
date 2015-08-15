@@ -6,42 +6,42 @@ type Season =
 
 type Harvest =
     | None
-    | Some of int64
+    | Some of int
 
 type Model = {
     season : Season;
-    population : int64;
-    food : int64;
-    fields : int64;
+    population : int;
+    food : int;
+    fields : int;
     harvest : Harvest;
     running : Boolean;
 }
 
 let foodRequired model =
-    model.population * 2L
+    model.population * 2
 
 let newPopulation model =
     let r = System.Random()
     let rate = match (model.food, foodRequired model) with
-               | (available, required) when available * 2L > required -> (float32)(r.Next(1, 6))
+               | (available, required) when available * 2 > required -> (float32)(r.Next(1, 6))
                | (available, required) when available > required -> (float32)(r.Next(1, 4))
-               | (0L, _) -> -(float32)(r.Next(500, 900))
-               | (available, required) when required / 4L > available -> -(float32)(r.Next(20, 60))
-               | (available, required) when required / 3L > available -> -(float32)(r.Next(10, 40))
-               | (available, required) when required / 2L > available -> -(float32)(r.Next(10, 20))
+               | (0, _) -> -(float32)(r.Next(500, 900))
+               | (available, required) when required / 4 > available -> -(float32)(r.Next(20, 60))
+               | (available, required) when required / 3 > available -> -(float32)(r.Next(10, 40))
+               | (available, required) when required / 2 > available -> -(float32)(r.Next(10, 20))
                | _ -> -(float32)(r.Next(5, 10))
-    model.population + (int64)((float32)model.population * (rate / 1000.0f))
+    model.population + (int)((float32)model.population * (rate / 1000.0f))
 
 let harvestedAmount model =
-    model.fields * 4L
+    model.fields * 40
 
 let advanceSeason model =
     let harvest = match model.season with
                       | Spring (_) -> None
                       | Autumn (_) -> Some <| harvestedAmount model
     let food = match harvest with
-                   | None -> max (model.food - foodRequired model) 0L
-                   | Some (amount) -> max (model.food + (harvestedAmount model) - foodRequired model) 0L
+                   | None -> max (model.food - foodRequired model) 0
+                   | Some (amount) -> max (model.food + (harvestedAmount model) - foodRequired model) 0
     let population = newPopulation model
     let season = match model.season with
                      | Spring (year) -> Autumn year
@@ -70,9 +70,9 @@ let rec mainLoop model =
 [<EntryPoint>]
 let main argv = 
     let model = { season = Spring 1;
-                  population = 500000L;
-                  food = 10000000L;
-                  fields = 25000L;
+                  population = 500;
+                  food = 2000;
+                  fields = 50;
                   harvest = None;
                   running = true }
     mainLoop model    
