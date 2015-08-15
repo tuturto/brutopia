@@ -4,10 +4,16 @@ type Season =
     | Spring of int
     | Autumn of int
 
+type Harvest =
+    | None
+    | Some of int64
+
 type Model = {
     season : Season;
     population : int64;
     food : int64;
+    fields : int64;
+    harvest : Harvest;
     running : Boolean;
 }
 
@@ -26,14 +32,24 @@ let newPopulation model =
                | _ -> -(float32)(r.Next(5, 10))
     model.population + (int64)((float32)model.population * (rate / 1000.0f))
 
+let harvestedAmount model =
+    model.fields * 4L
+
 let advanceSeason model =
-    match model.season with
-        | Spring (year) -> { model with season = Autumn year
-                                        population = (newPopulation model)
-                                        food = max (model.food - foodRequired model) 0L }
-        | Autumn (year) -> { model with season = Spring <| year + 1
-                                        population = (newPopulation model)
-                                        food = max (model.food - foodRequired model) 0L }
+    let harvest = match model.season with
+                      | Spring (_) -> None
+                      | Autumn (_) -> Some <| harvestedAmount model
+    let food = match harvest with
+                   | None -> max (model.food - foodRequired model) 0L
+                   | Some (amount) -> max (model.food + (harvestedAmount model) - foodRequired model) 0L
+    let population = newPopulation model
+    let season = match model.season with
+                     | Spring (year) -> Autumn year
+                     | Autumn (year) -> Spring <| year + 1
+    { model with season = season
+                 population = population
+                 food = food
+                 harvest = harvest }
 
 let outputStatus model =
     printfn "%s" <| match model.season with
@@ -41,6 +57,9 @@ let outputStatus model =
                         | Spring (year) -> sprintf "Spring of year %d" year
     printfn "Population: %d" model.population
     printfn "Food: %d / %d" model.food <| foodRequired model
+    printfn "harvested: %s" <| match model.harvest with
+                                   | None -> sprintf "harvest is not yet ready"
+                                   | Some (amount) -> sprintf "%d" amount
     model
 
 let rec mainLoop model =
@@ -53,6 +72,8 @@ let main argv =
     let model = { season = Spring 1;
                   population = 500000L;
                   food = 10000000L;
+                  fields = 25000L;
+                  harvest = None;
                   running = true }
     mainLoop model    
     0 // return an integer exit code
