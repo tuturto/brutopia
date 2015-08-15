@@ -9,12 +9,13 @@ type Season =
 type Model = {
     year : int;
     season : Season;
-    population : uint64;
+    population : int64;
     running : Boolean;
 }
 
 let newPopulation model =
-    (uint64((float)model.population * 1.004))
+    let r = System.Random()
+    model.population + (int64)((float32)model.population * ((float32)(r.Next(1, 5)) / 1000.0f))
 
 let processSpringSeason model =
     {model with season = Season.Autumn 
@@ -52,7 +53,7 @@ let rec mainLoop model =
 let main argv = 
     let model = { year = 1;
                   season = Season.Spring;
-                  population = (uint64)2503042;
+                  population = (int64)500000;
                   running = true }
     mainLoop model    
     0 // return an integer exit code
